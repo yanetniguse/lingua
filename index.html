@@ -600,24 +600,154 @@ button:hover {
 }
 </style>
 
+
+
+<div class="country__container">
+    <img src="https://i.pinimg.com/736x/df/4f/86/df4f8644be60b8577ad98a89f5b6257e.jpg" alt="Ethiopia" id="country" class="Ethiopia">
+    <button onclick="startLesson()">Ethiopia</button>
+</div>
+
+<div id="lesson-container" style="display:none;">
+    <h2>Basic Amharic Conversation</h2>
+    <p>Learn some basic Amharic phrases:</p>
+    <ul>
+        <li>ሰላም (Selam) - Hello</li>
+        <li>እንዴት ነህ? (Endet neh?) - How are you?</li>
+        <li>እኔ ጤና ማርካት ነኝ (I am fine)</li>
+        <li>ስምህ ማን ነው? (What is your name?)</li>
+    </ul>
+    <button onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<div id="quiz-container" style="display:none;">
+    <h3>Amharic Quiz</h3>
+    <div id="quiz-content"></div>
+    <button onclick="submitQuiz()">Submit Quiz</button>
+</div>
+
+<div id="result-container" style="display:none;">
+    <h3>Results</h3>
+    <p id="score"></p>
+    <p id="status"></p>
+</div>
+
+<style>
+    /* Resize the image to an icon size */
+    #country {
+        width: 50px; /* Set width to make it smaller */
+        height: 50px; /* Set height to match the width */
+        border-radius: 50%; /* Optional: to make it a circular icon */
+    }
+
+    #lesson-container, #quiz-container, #result-container {
+        margin: 20px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+</style>
+
 <script>
-       
-       async function translateText(text) {
-    try {
-        const response = await fetch('/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inputText: text })
-        });
-        const result = await response.json();
-        return result.translatedText;
-    } catch (error) {
-        console.error("Error during translation:", error);
-        throw error;
+let currentLesson = 0;
+let score = 0;
+
+const lessons = [
+    {
+        title: "Basic Amharic Conversation",
+        content: [
+            "ሰላም (Selam) - Hello",
+            "እንዴት ነህ? (Endet neh?) - How are you?",
+            "እኔ ጤና ማርካት ነኝ (I am fine)",
+            "ስምህ ማን ነው? (What is your name?)"
+        ],
+        quiz: [
+            { question: "What is the Amharic word for 'Hello'?", options: ["ሰላም", "እንዴት", "ተስፋ"], answer: 0 },
+            { question: "How do you say 'How are you?' in Amharic?", options: ["እንዴት ነህ?", "ሰላም", "ስምህ ማን ነው?"], answer: 0 },
+            { question: "What is the Amharic phrase for 'I am fine'?", options: ["እኔ ጤና ማርካት ነኝ", "አመሰግናለሁ", "ስምህ ማን ነው?"], answer: 0 },
+            { question: "How do you say 'What is your name?' in Amharic?", options: ["ስምህ ማን ነው?", "እኔ ጤና ማርካት ነኝ", "ተስፋ"], answer: 0 }
+        ]
+    }
+];
+
+function startLesson() {
+    document.getElementById("lesson-container").style.display = 'block';
+    document.getElementById("quiz-container").style.display = 'none';
+    document.getElementById("result-container").style.display = 'none';
+
+    const lesson = lessons[currentLesson];
+    let content = `<h2>${lesson.title}</h2><ul>`;
+    lesson.content.forEach(line => content += `<li>${line}</li>`);
+    content += `</ul>`;
+
+    // Only show the lesson content and keep the start quiz button if it's not already shown.
+    const lessonContainer = document.getElementById("lesson-container");
+    if (!lessonContainer.querySelector('button')) {
+        lessonContainer.innerHTML = content + 
+            `<button onclick="startQuiz()">Start Quiz</button>`;
+    } else {
+        lessonContainer.innerHTML = content;
     }
 }
 
+
+function startQuiz() {
+    document.getElementById("lesson-container").style.display = 'none';
+    document.getElementById("quiz-container").style.display = 'block';
+
+    const lesson = lessons[currentLesson];
+    let quizContent = '';
+    lesson.quiz.forEach((question, index) => {
+        quizContent += `
+            <div>
+                <p>${question.question}</p>
+                <ul>
+                    ${question.options.map((option, i) => `
+                        <li><input type="radio" name="q${index}" value="${i}"> ${option}</li>
+                    `).join('') }
+                </ul>
+            </div>
+        `;
+    });
+
+    document.getElementById("quiz-content").innerHTML = quizContent;
+}
+
+function submitQuiz() {
+    const lesson = lessons[currentLesson];
+    score = 0;
+
+    lesson.quiz.forEach((question, index) => {
+        const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+        if (selectedOption && parseInt(selectedOption.value) === question.answer) {
+            score++;
+        }
+    });
+
+    document.getElementById("quiz-container").style.display = 'none';
+    document.getElementById("result-container").style.display = 'block';
+
+    const status = score === lesson.quiz.length ? 'Excellent! You are fluent!' : 
+                   score > lesson.quiz.length / 2 ? 'Good job! Keep practicing!' : 
+                   'You need to work on it!';
+
+    document.getElementById("score").innerHTML = `You scored: ${score}/${lesson.quiz.length}`;
+    document.getElementById("status").innerHTML = `Your Amharic Level: ${status}`;
+}
 </script>
+
 
 <div class="translator-box">
     <h2>Text Translator</h2>
